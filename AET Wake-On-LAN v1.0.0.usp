@@ -1,0 +1,104 @@
+/*******************************************************************************************
+  SIMPL+ Module Information
+*******************************************************************************************/
+/*
+Programmer: Tony Evert / tony722@gmail.com
+*/
+
+/*******************************************************************************************
+  Compiler Directives
+  (Uncomment and declare compiler directives as needed)
+*******************************************************************************************/
+// #ENABLE_DYNAMIC
+// #SYMBOL_NAME ""
+// #HINT ""
+// #DEFINE_CONSTANT
+// #CATEGORY "" 
+// #PRINT_TO_TRACE
+// #DIGITAL_EXPAND 
+// #ANALOG_SERIAL_EXPAND 
+// #OUTPUT_SHIFT 
+// #HELP_PDF_FILE ""
+#DEFAULT_VOLATILE
+#ENABLE_STACK_CHECKING
+#ENABLE_TRACE
+// #ENCODING_ASCII
+// #ENCODING_UTF16
+// #ENCODING_INHERIT_FROM_PARENT
+// #ENCODING_INHERIT_FROM_PROGRAM
+
+#HELP_BEGIN
+Wake Input: 
+Pulse this input to send the Wake-On_LAN packet to the computer or device you want to power on.
+
+MAC_Address parameter: 
+Must be in the Hex String format: \xAA\xBB\xCC\xDD\xEE\xFF. 
+**DO NOT** use strings like "00-11-22..." or "00:11:22..."
+
+#HELP_END
+
+
+/*******************************************************************************************
+  DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
+*******************************************************************************************/
+DIGITAL_INPUT _Skip_, Wake;
+
+/*******************************************************************************************
+  SOCKETS
+*******************************************************************************************/
+UDP_SOCKET WolSocket[512];
+
+/*******************************************************************************************
+  Parameters
+*******************************************************************************************/
+STRING_PARAMETER MAC_Address[6];
+
+/*******************************************************************************************
+  Parameter Properties
+*******************************************************************************************/
+#BEGIN_PARAMETER_PROPERTIES MAC_Address
+  propDefaultValue = "\xAA\xBB\xCC\xDD\xEE\xFF";
+  propShortDescription = "MAC Address in format \xAA\xBB\xCC\xDD\xEE\xFF";
+#END_PARAMETER_PROPERTIES
+
+/*******************************************************************************************
+  Global Variables
+*******************************************************************************************/
+string packet[500];
+
+/*******************************************************************************************
+  Functions
+*******************************************************************************************/
+function MakeWolPacket() {
+  makeString(packet, "\xFF\xFF\xFF\xFF\xFF\xFF%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", 
+    MAC_Address, MAC_Address, MAC_Address, MAC_Address, 
+    MAC_Address, MAC_Address, MAC_Address, MAC_Address, 
+    MAC_Address, MAC_Address, MAC_Address, MAC_Address, 
+    MAC_Address, MAC_Address, MAC_Address, MAC_Address
+  );
+}
+  
+
+/*******************************************************************************************
+  Event Handlers
+*******************************************************************************************/
+PUSH Wake {
+  SocketUDP_Enable(WolSocket, "255.255.255.255", 9);
+  SocketSend(WolSocket, packet);
+  delay(5);
+  SocketSend(WolSocket, packet);
+  delay(5);
+  SocketSend(WolSocket, packet);
+  SocketUDP_Disable(WolSocket);
+}
+
+
+/*******************************************************************************************
+  Main()
+*******************************************************************************************/
+
+Function Main() {
+  WaitForInitializationComplete();
+  MakeWolPacket();
+}
+
