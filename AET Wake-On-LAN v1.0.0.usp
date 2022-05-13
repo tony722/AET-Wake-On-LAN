@@ -28,6 +28,8 @@ Programmer: Tony Evert / tony722@gmail.com
 // #ENCODING_INHERIT_FROM_PROGRAM
 
 #HELP_BEGIN
+Source: https://github.com/tony722/AET-Wake-On-LAN
+
 Wake Input: 
 Pulse this input to send the Wake-On_LAN packet to the computer or device you want to power on.
 
